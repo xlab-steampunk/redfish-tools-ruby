@@ -1,5 +1,6 @@
+# frozen_string_literal: true
 
-lib = File.expand_path("../lib", __FILE__)
+lib = File.expand_path("lib", __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require "redfish_tools/version"
 
@@ -9,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Tadej Borovšak"]
   spec.email         = ["tadej.borovsak@xlab.si"]
 
-  spec.summary       = %q{Collection of tools for developers, working with Redfish services.}
+  spec.summary       = "Collection of tools for working with Redfish services."
   spec.homepage      = "https://github.com/xlab-si/redfish_tools"
   spec.license       = "Apache-2.0"
 
@@ -28,6 +29,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_runtime_dependency "redfish_client", "~> 0.2"
+  spec.add_runtime_dependency "cri", "~> 2.10"
 
   spec.add_development_dependency "bundler", "~> 1.16"
   spec.add_development_dependency "pry"

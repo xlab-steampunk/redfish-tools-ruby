@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe RedfishTools do
   it "has a version number" do
     expect(RedfishTools::VERSION).not_to be nil

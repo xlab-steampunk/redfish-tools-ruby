@@ -1,5 +1,3 @@
-require "redfish_tools/version"
+# frozen_string_literal: true
 
-module RedfishTools
-  # Your code goes here...
-end
+require "redfish_tools/version"
