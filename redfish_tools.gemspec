@@ -28,8 +28,8 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_runtime_dependency "redfish_client", "~> 0.2"
-  spec.add_runtime_dependency "cri", "~> 2.10"
+  spec.add_runtime_dependency "redfish_client", "~> 0.2.2"
+  spec.add_runtime_dependency "thor", "~> 0.19"
 
   spec.add_development_dependency "bundler", "~> 1.16"
   spec.add_development_dependency "pry"
