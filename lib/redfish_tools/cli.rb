@@ -19,6 +19,10 @@ module RedfishTools
     option :bind,
            desc: "address that server should bind to",
            default: "127.0.0.1"
+    option :ssl,
+           desc: "use SSL",
+           default: false,
+           type: :boolean
     def serve(path)
       require "redfish_tools/cli/serve"
       Serve.new(path, options).run

@@ -15,7 +15,9 @@ module RedfishTools
         datastore = RedfishTools::DataStore.new(@path)
         server = RedfishTools::Server.new(datastore,
                                           Port: @options[:port],
-                                          BindAddress: @options[:bind])
+                                          BindAddress: @options[:bind],
+                                          SSLEnable: @options[:ssl],
+                                          SSLCertName: [%w[CN localhost]])
         trap("INT") { server.shutdown }
         server.start
       end
