@@ -11,7 +11,7 @@ module RedfishTools
     def initialize(datastore, config = {})
       super(config)
 
-      root = JSON.parse(datastore.get("/redfish/v1").body)
+      root = datastore.get("/redfish/v1").body
       login_path = root.dig("Links", "Sessions", "@odata.id")
       mount("/", Servlet, datastore, login_path)
     end

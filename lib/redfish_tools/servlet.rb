@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "json"
 require "set"
 require "webrick"
 
@@ -20,7 +21,7 @@ module RedfishTools
       return response.status = 401 unless authorized?(request)
 
       resource = @datastore.get(request.path)
-      response.body = resource.body
+      response.body = resource.body.to_json
       set_headers(response, resource.headers)
       response.status = response.body ? 200 : 404
     end

@@ -30,24 +30,21 @@ module RedfishTools
     end
 
     def load_body(id)
-      load(File.join(@base_path, id, "index.json"))
+      load_json(File.join(@base_path, id, "index.json"))
     end
 
     def load_headers(id)
-      load_json(File.join(@base_path, id, "headers.json"))["GET"]
+      headers = load_json(File.join(@base_path, id, "headers.json"))
+      headers && headers["GET"]
     end
 
     def load_time(id)
-      load_json(File.join(@base_path, id, "time.json"))["GET_Time"].to_f
-    end
-
-    def load(path)
-      File.readable?(path) ? File.read(path) : nil
+      times = load_json(File.join(@base_path, id, "time.json"))
+      times && times["GET_Time"]&.to_f
     end
 
     def load_json(path)
-      content = load(path)
-      content ? JSON.parse(content) : {}
+      File.readable?(path) ? JSON.parse(File.read(path)) : nil
     end
   end
 end
