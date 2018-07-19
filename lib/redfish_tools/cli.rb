@@ -11,6 +11,10 @@ module RedfishTools
       super(args)
     end
 
+    def self.exit_on_failure?
+      true
+    end
+
     desc "serve [OPTIONS] PATH", "serve mock from PATH"
     option :port,
            desc: "port that should be used to serve the mock",
