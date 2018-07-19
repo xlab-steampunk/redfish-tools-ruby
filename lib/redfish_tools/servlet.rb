@@ -1,26 +1,26 @@
 # frozen_string_literal: true
 
+require "forwardable"
 require "json"
 require "set"
 require "webrick"
 
 module RedfishTools
   class Servlet < WEBrick::HTTPServlet::AbstractServlet
+    extend Forwardable
+
+    def_delegators :@server,
+                   :datastore, :login_path
+
     BAD_HEADERS = Set.new(["connection", "content-length", "keep-alive"])
     DEFAULT_HEADERS = {
       "content-type" => "application/json"
     }.freeze
 
-    def initialize(server, datastore, login_path)
-      super(server)
-      @datastore = datastore
-      @login_path = login_path.chomp("/")
-    end
-
     def do_GET(request, response)
       return response.status = 401 unless authorized?(request)
 
-      resource = @datastore.get(request.path)
+      resource = datastore.get(request.path)
       response.body = resource.body.to_json
       set_headers(response, resource.headers)
       response.status = response.body ? 200 : 404
@@ -51,7 +51,7 @@ module RedfishTools
     private
 
     def login_path?(path)
-      @login_path == path.chomp("/")
+      login_path == path.chomp("/")
     end
 
     def login(request, response)

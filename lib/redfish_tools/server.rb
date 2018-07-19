@@ -11,9 +11,13 @@ module RedfishTools
     def initialize(datastore, config = {})
       super(config)
 
+      @datastore = datastore
       root = datastore.get("/redfish/v1").body
-      login_path = root.dig("Links", "Sessions", "@odata.id")
-      mount("/", Servlet, datastore, login_path)
+      @login_path = root.dig("Links", "Sessions", "@odata.id")&.chomp("/")
+
+      mount("/", Servlet)
     end
+
+    attr_reader :datastore, :login_path
   end
 end
