@@ -26,6 +26,8 @@ module RedfishTools
     def serve(path)
       require "redfish_tools/cli/serve"
       Serve.new(path, options).run
+    rescue StandardError => e
+      raise Thor::Error, e.to_s
     end
   end
 end

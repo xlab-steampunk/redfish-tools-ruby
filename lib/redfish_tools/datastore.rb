@@ -7,9 +7,11 @@ module RedfishTools
     Resource = Struct.new(:id, :body, :headers, :time)
 
     def initialize(base_path)
-      # TODO(tadeboro): check for folder and determine mode of operation
       @base_path = File.expand_path(base_path)
       @overlay = {}
+
+      root_file = File.join(@base_path, "redfish", "v1", "index.json")
+      raise "Invalid recording folder" unless File.file?(root_file)
     end
 
     def get(id)
