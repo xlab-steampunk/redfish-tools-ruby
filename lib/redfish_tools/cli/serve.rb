@@ -14,6 +14,8 @@ module RedfishTools
       def run
         datastore = RedfishTools::DataStore.new(@path)
         server = RedfishTools::Server.new(datastore,
+                                          @options[:user],
+                                          @options[:pass],
                                           Port: @options[:port],
                                           BindAddress: @options[:bind],
                                           SSLEnable: @options[:ssl],

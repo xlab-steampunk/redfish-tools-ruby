@@ -23,7 +23,16 @@ module RedfishTools
            desc: "use SSL",
            default: false,
            type: :boolean
+    option :user,
+           desc: "username to use"
+    option :pass,
+           desc: "password to use"
     def serve(path)
+      user = options[:user]
+      pass = options[:pass]
+      raise Thor::Error, "Missing password" if user && pass.nil?
+      raise Thor::Error, "Missing username" if user.nil? && pass
+
       require "redfish_tools/cli/serve"
       Serve.new(path, options).run
     rescue StandardError => e
