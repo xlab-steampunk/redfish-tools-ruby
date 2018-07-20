@@ -1,16 +1,21 @@
-# RedfishTools
+# Redfish tools
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/redfish_tools`. To experiment with that code, run `bin/console` for an interactive prompt.
+[![Build Status](https://travis-ci.com/xlab-si/redfish_tools.svg?branch=master)](https://travis-ci.com/xlab-si/redfish_tools)
 
-TODO: Delete this and the text above, and describe your gem
+
+This repository contains source code for redfish_tools gem that contains tools
+for testing application that know how to work with Redfish API.
+
+The only tool that is currently available is mock server, but in the near
+future, we will also add a mock creator tool and interactive inspector for
+Redfish services.
+
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
-```ruby
-gem 'redfish_tools'
-```
+    gem "redfish_tools"
 
 And then execute:
 
@@ -20,16 +25,38 @@ Or install it yourself as:
 
     $ gem install redfish_tools
 
+
 ## Usage
 
-TODO: Write usage instructions here
+The simplest way to start using Redfish tools is to simply run the `redfish`
+command and read the provided help. At the moment, the output should look like
+this:
+
+    $ redfish
+    Commands:
+      redfish help [COMMAND]        # Describe available commands
+      redfish serve [OPTIONS] PATH  # serve mock from PATH
+
+To start serving existing Redfish recording, we run the `serve` command:
+
+    $ redfish serve --ssl --user test --pass demo path/to/recording
+
+To get the description of all available options, use `help` command or add
+`-h` flag anywhere in the command.
+
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+After checking out the repo, run `bin/setup` to install dependencies.
+Unfortunately, this gem contains no tests at the moment, so if you feel like
+contributing, this would be a great place to start.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+To create new release, increment the version number, commit the change, tag
+the commit and push tag to the GitHub. Travis CI will pick from there on and
+create new release, publishing it on https://rubygems.org.
+
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/redfish_tools.
+Bug reports and pull requests are welcome on GitHub at
+https://github.com/xlab-si/redfish_tools.
