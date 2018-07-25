@@ -42,5 +42,30 @@ module RedfishTools
     rescue StandardError => e
       raise Thor::Error, e.to_s
     end
+
+    desc "record SERVICE PATH", "create recording of SERVICE in PATH"
+    long_desc <<-LONGDESC
+      Record a Redfish service content into set of static files and store them
+      on disk. Sample record call:
+
+        $ . password_file
+        $ redfish record https://my.redfish.api:8443 output folder
+
+      Before running this command, make sure REDFISH_USERNAME and
+      REDFISH_PASSWORD environment variables are set. The recommended way of
+      setting them is by writing the assignments down into shell script that
+      can be then sourced as shown in example.
+    LONGDESC
+    def record(service, path)
+      username = ENV["REDFISH_USERNAME"]
+      password = ENV["REDFISH_PASSWORD"]
+      raise "Missing username" if username.nil?
+      raise "Missing password" if password.nil?
+
+      require "redfish_tools/cli/record"
+      Record.new(service, path, username, password).run
+    rescue StandardError => e
+      raise Thor::Error, e.to_s
+    end
   end
 end
