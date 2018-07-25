@@ -34,8 +34,8 @@ module RedfishTools
     def serve(path)
       user = options[:user]
       pass = options[:pass]
-      raise Thor::Error, "Missing password" if user && pass.nil?
-      raise Thor::Error, "Missing username" if user.nil? && pass
+      raise "Missing password" if user && pass.nil?
+      raise "Missing username" if user.nil? && pass
 
       require "redfish_tools/cli/serve"
       Serve.new(path, options).run
