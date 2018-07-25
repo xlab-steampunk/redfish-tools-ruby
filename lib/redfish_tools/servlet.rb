@@ -39,7 +39,7 @@ module RedfishTools
 
       data = JSON.parse(request.body)
       item_n = login_path?(request) ? login(item, data) : new_item(item, data)
-      return response.status = 400 unless item_n.body
+      return response.status = 400 unless item_n&.body
 
       response.status = 201
       set_headers(response, item_n.headers)
