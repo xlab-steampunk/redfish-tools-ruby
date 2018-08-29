@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["tadej.borovsak@xlab.si"]
 
   spec.summary       = "Collection of tools for working with Redfish services."
-  spec.homepage      = "https://github.com/xlab-si/redfish_tools"
+  spec.homepage      = "https://github.com/xlab-si/redfish-tools-ruby"
   spec.license       = "Apache-2.0"
 
   if spec.respond_to?(:metadata)

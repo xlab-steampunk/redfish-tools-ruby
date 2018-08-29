@@ -11,4 +11,4 @@ deploy:
   gem: redfish_tools
   on:
     tags: true
-    repo: xlab-si/redfish_tools
+    repo: xlab-si/redfish-tools-ruby
