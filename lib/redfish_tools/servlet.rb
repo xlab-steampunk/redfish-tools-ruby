@@ -86,7 +86,7 @@ module RedfishTools
       item.body["Members"].push("@odata.id" => oid)
 
       base = { "@odata.id" => oid, "Id" => id, "Name" => id }
-      datastore.set(id, base.merge(data), parent: item)
+      datastore.set(oid, base.merge(data), parent: item)
     end
 
     def authorized?(request)
