@@ -56,8 +56,9 @@ module RedfishTools
       response.status = 501
     end
 
-    def do_DELETE(_request, response)
-      response.status = 501
+    def do_DELETE(request, response)
+      delete_item(datastore.get(request.path))
+      response.status = 204
     end
 
     private
@@ -87,6 +88,16 @@ module RedfishTools
 
       base = { "@odata.id" => oid, "Id" => id, "Name" => id }
       datastore.set(oid, base.merge(data), parent: item)
+    end
+
+    def delete_item(item)
+      if item.parent
+        item.parent.body["Members@odata.count"] -= 1
+        item.parent.body["Members"].delete_if do |m|
+          m["@odata.id"] == item.id
+        end
+      end
+      datastore.set(item.id, nil)
     end
 
     def authorized?(request)

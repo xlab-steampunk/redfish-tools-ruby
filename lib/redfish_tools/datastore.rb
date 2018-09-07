@@ -16,7 +16,7 @@ module RedfishTools
 
     def get(id)
       id = id.chomp("/")
-      @overlay[id] ||= load_resource(id)
+      @overlay[id] = @overlay.fetch(id, load_resource(id))
     end
 
     def set(id, body, headers: nil, time: nil, parent: nil)
