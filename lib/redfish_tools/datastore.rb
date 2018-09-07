@@ -4,7 +4,7 @@ require "json"
 
 module RedfishTools
   class DataStore
-    Resource = Struct.new(:id, :body, :headers, :time)
+    Resource = Struct.new(:id, :body, :headers, :time, :parent)
 
     def initialize(base_path)
       @base_path = File.expand_path(base_path)
@@ -19,8 +19,8 @@ module RedfishTools
       @overlay[id] ||= load_resource(id)
     end
 
-    def set(id, body, headers: nil, time: nil)
-      @overlay[id] = Resource.new(id, body, headers, time)
+    def set(id, body, headers: nil, time: nil, parent: nil)
+      @overlay[id] = Resource.new(id, body, headers, time, parent)
     end
 
     private
