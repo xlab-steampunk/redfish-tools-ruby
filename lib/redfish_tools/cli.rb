@@ -67,5 +67,28 @@ module RedfishTools
     rescue StandardError => e
       raise Thor::Error, e.to_s
     end
+
+    desc "serve_sse [OPTIONS] SOURCE", "serve events from SOURCE"
+    option :port,
+           desc: "port that should be used to serve events",
+           default: 8001,
+           type: :numeric
+    option :bind,
+           desc: "address that server should bind to",
+           default: "127.0.0.1"
+    option :ssl,
+           desc: "use SSL",
+           default: false,
+           type: :boolean
+    def serve_sse(source)
+      require "redfish_tools/cli/serve_sse"
+      ServeSse.new(source, options).run
+    end
+
+    desc "listen_sse ADDRESS", "listen to events from ADDRESS"
+    def listen_sse(address)
+      require "redfish_tools/cli/listen_sse"
+      ListenSse.new(address, options).run
+    end
   end
 end
