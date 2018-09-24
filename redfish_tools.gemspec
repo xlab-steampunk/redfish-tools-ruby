@@ -28,7 +28,7 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_runtime_dependency "redfish_client", "~> 0.2.2"
+  spec.add_runtime_dependency "redfish_client", "~> 0.3"
   spec.add_runtime_dependency "server_sent_events", "~> 0.1.1"
   spec.add_runtime_dependency "thor", "~> 0.19"
 
