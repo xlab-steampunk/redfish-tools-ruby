@@ -12,21 +12,38 @@ module RedfishTools
 
     def_delegators :@server,
                    :datastore, :login_path, :username, :password,
-                   :basic_auth_header
+                   :basic_auth_header, :system_actions
 
     BAD_HEADERS = Set.new(["connection", "content-length", "keep-alive"])
     DEFAULT_HEADERS = {
       "content-type" => "application/json"
     }.freeze
+    TRANSITIONS = {
+      "On"  => {
+        "GracefullShutdown" => "Off",
+        "ForceOff"          => "Off",
+        "PushPowerButton"   => "Off",
+        "Nmi"               => "Off",
+        "GracefullRestart"  => "On",
+        "ForceRestart"      => "On",
+        "PowerCycle"        => "On",
+      }.freeze,
+      "Off" => {
+        "On"              => "On",
+        "ForceOn"         => "On",
+        "PushPowerButton" => "On",
+      }.freeze,
+    }.freeze
 
     def service(request, response)
       return response.status = 401 unless authorized?(request)
-      return response.status = 404 unless datastore.get(request.path).body
 
       super
     end
 
     def do_GET(request, response)
+      return response.status = 404 unless datastore.get(request.path).body
+
       item = datastore.get(request.path)
       response.status = 200
       set_headers(response, item.headers)
@@ -34,12 +51,15 @@ module RedfishTools
     end
 
     def do_POST(request, response)
+      action = system_actions[request.path]
       item = datastore.get(request.path)
-      return response.status = 404 unless item.body
-      return response.status = 405 if item.body["Members"].nil?
+      return response.status = 404 unless action || item.body
+      return response.status = 405 if action.nil? && item.body["Members"].nil?
 
       data = JSON.parse(request.body)
-      if login_path?(request.path)
+      if action
+        body, headers, status = execute_action(action, data)
+      elsif login_path?(request.path)
         body, headers, status = login(item, data)
       else
         body, headers, status = new_item(item, data)
@@ -63,7 +83,10 @@ module RedfishTools
     end
 
     def do_DELETE(request, response)
-      delete_item(datastore.get(request.path))
+      item = datastore.get(request.path)
+      return response.status = 404 unless item.body
+
+      delete_item(item)
       response.status = 204
     end
 
@@ -71,6 +94,26 @@ module RedfishTools
 
     def error_body(msg)
       { "error" => { "message" => msg } }
+    end
+
+    def execute_action(action, data)
+      # TODO(@tadeboro): This method currently only handles reset action.
+      system = datastore.get(action[:system_id]).body
+      action = system["Actions"][action[:name]]
+      reset = data["ResetType"]
+
+      unless action["ResetType@Redfish.AllowableValues"].include?(reset)
+        return error_body("Invalid reset type"), nill, 400
+      end
+
+      unless TRANSITIONS[system["PowerState"]].key?(reset)
+        return error_body("Invalid reset type for curent state"), nil, 400
+      end
+
+      # Simulate reset action
+      system["PowerState"] = TRANSITIONS[system["PowerState"]][reset]
+
+      [error_body("Success"), nil, 200]
     end
 
     def login_path?(path)
