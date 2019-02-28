@@ -35,17 +35,23 @@ module RedfishTools
 
     def do_POST(request, response)
       item = datastore.get(request.path)
-      return response.status = 405 unless item.body["Members"]
+      return response.status = 404 unless item.body
+      return response.status = 405 if item.body["Members"].nil?
 
       data = JSON.parse(request.body)
-      item_n = login_path?(request) ? login(item, data) : new_item(item, data)
-      return response.status = 400 unless item_n&.body
+      if login_path?(request.path)
+        body, headers, status = login(item, data)
+      else
+        body, headers, status = new_item(item, data)
+      end
 
-      response.status = 201
-      set_headers(response, item_n.headers)
-      response.body = item_n.body.to_json
+      response.status = status
+      set_headers(response, headers)
+      response.body = body.to_json
     rescue JSON::ParserError
       response.status = 400
+      set_headers(response)
+      response.body = error_body("Invalid JSON").to_json
     end
 
     def do_PUT(_request, response)
@@ -63,21 +69,25 @@ module RedfishTools
 
     private
 
-    def login_path?(request)
-      login_path == request.path.chomp("/")
+    def error_body(msg)
+      { "error" => { "message" => msg } }
+    end
+
+    def login_path?(path)
+      login_path == path.chomp("/")
     end
 
     def login(item, data)
       user = data["UserName"]
-      pass = data["Password"]
-      return nil unless username == user && password == pass
+      unless username == user && password == data["Password"]
+        return error_body("Invalid username/password"), nil, 400
+      end
 
-      res = new_item(item,
-                     "@odata.type" => "#Session.v1_1_0.Session",
-                     "UserName"    => user,
-                     "Password"    => nil)
-      res.headers = DEFAULT_HEADERS.merge("X-Auth-Token" => res.body["Id"])
-      res
+      body, _, status = new_item(item,
+                                 "@odata.type" => "#Session.v1_1_0.Session",
+                                 "UserName"    => user,
+                                 "Password"    => nil)
+      [body, DEFAULT_HEADERS.merge("X-Auth-Token" => body["Id"]), status]
     end
 
     def new_item(item, data)
@@ -87,7 +97,8 @@ module RedfishTools
       item.body["Members"].push("@odata.id" => oid)
 
       base = { "@odata.id" => oid, "Id" => id, "Name" => id }
-      datastore.set(oid, base.merge(data), parent: item)
+      new_item = datastore.set(oid, base.merge(data), parent: item)
+      [new_item.body, nil, 201]
     end
 
     def delete_item(item)
@@ -105,7 +116,7 @@ module RedfishTools
         always_allow?(request.path) || # Non-protected endpoints
         authorized_basic?(request) ||
         authorized_session?(request) ||
-        (request.request_method == "POST" && login_path?(request))
+        (request.request_method == "POST" && login_path?(request.path))
     end
 
     def always_allow?(path)
@@ -134,7 +145,7 @@ module RedfishTools
       nil
     end
 
-    def set_headers(response, headers)
+    def set_headers(response, headers = nil)
       headers ||= DEFAULT_HEADERS
       headers.each do |k, v|
         response[k] = v unless BAD_HEADERS.member?(k.downcase)
