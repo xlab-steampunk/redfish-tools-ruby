@@ -5,6 +5,8 @@ require "json"
 require "securerandom"
 require "set"
 require "webrick"
+require "redfish_tools/utils"
+require "redfish_tools/exceptions"
 
 module RedfishTools
   class Servlet < WEBrick::HTTPServlet::AbstractServlet
@@ -78,8 +80,15 @@ module RedfishTools
       response.status = 501
     end
 
-    def do_PATCH(_request, response)
-      response.status = 501
+    def do_PATCH(request, response)
+      system = datastore.get(request.path)
+      return response.status = 404 unless system.body
+      system.body = Utils.combine_hashes(system.body, JSON.parse(request.body))
+      response.status = 200
+    rescue Exceptions::MergeConflict => error
+      response.status = 405
+      set_headers(response)
+      response.body = error_body(error).to_json
     end
 
     def do_DELETE(request, response)
