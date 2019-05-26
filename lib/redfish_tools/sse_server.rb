@@ -2,6 +2,7 @@
 
 require "date"
 require "json"
+require "securerandom"
 require "socket"
 
 module RedfishTools
@@ -30,13 +31,20 @@ module RedfishTools
       id = 0
       loop do
         event = @events.sample
-        event["Events"][0]["EventTimestamp"] = DateTime.now.to_s
+        make_events_unique(event["Events"])
         socket.print("id: #{id}\ndata: #{event.to_json}\n\n")
-        sleep(rand(1..10))
+        sleep(rand(1..60))
         id += 1
       end
     ensure
       socket.close
+    end
+
+    def make_events_unique(events)
+      events.each do |event|
+        event["EventTimestamp"] = Time.now.utc.to_s
+        event["EventId"] = SecureRandom.uuid
+      end
     end
   end
 end
