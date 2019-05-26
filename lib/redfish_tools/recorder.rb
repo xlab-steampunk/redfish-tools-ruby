@@ -98,18 +98,20 @@ module RedfishTools
       File.open(path, "w") { |f| f.write(data) }
     end
 
-    def extract_oids_from_hash(data)
-      ids = Set.new
-      ids.add(data["@odata.id"]) if data["@odata.id"]
-      data.values.reduce(ids) { |a, v| a.merge(extract_oids(v)) }
+    def extract_oids(data)
+      result = Set.new
+
+      case data
+      when Hash then data.values.each { |v| result.merge(extract_oids(v)) }
+      when Array then data.each { |v| result.merge(extract_oids(v)) }
+      when String then result.add(data) if path?(data)
+      end
+
+      result
     end
 
-    def extract_oids(data)
-      case data
-      when Hash then extract_oids_from_hash(data)
-      when Array then data.reduce(Set.new) { |a, v| a.merge(extract_oids(v)) }
-      else Set.new
-      end
+    def path?(data)
+      /^\/redfish\/v1\/[^# ]*$/.match(data)
     end
   end
 end
