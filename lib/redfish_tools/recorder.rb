@@ -36,13 +36,30 @@ module RedfishTools
     end
 
     def process_oid(oid)
-      start = Time.now
-      resource = @client.find(oid)
-      duration = Time.now - start
-      return Set.new unless resource
+      resource, duration = fetch_resource(oid)
+      if resource
+        persist_to_disk(oid, resource.raw, resource.headers, duration)
+        extract_oids(resource.raw)
+      else
+        puts("!!!! FAILED TO FETCH #{oid} !!!!")
+        Set.new
+      end
+    end
 
-      persist_to_disk(oid, resource.raw, resource.headers, duration)
-      extract_oids(resource.raw)
+    def fetch_resource(oid)
+      3.times do
+        begin
+          start = Time.now
+          resource = @client.find(oid)
+          duration = Time.now - start
+          return [resource, duration] if resource
+        rescue JSON::ParserError => e
+          return [nil, nil]
+        end
+
+        sleep(2)
+      end
+      [nil, nil]
     end
 
     def persist_to_disk(oid, body, headers, duration)
