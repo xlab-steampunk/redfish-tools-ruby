@@ -14,7 +14,7 @@ module RedfishTools
 
     def_delegators :@server,
                    :datastore, :login_path, :username, :password,
-                   :basic_auth_header, :system_actions
+                   :basic_auth_header, :actions, :systems
 
     BAD_HEADERS = Set.new(["connection", "content-length", "keep-alive"])
     DEFAULT_HEADERS = {
@@ -36,6 +36,12 @@ module RedfishTools
         "PushPowerButton" => "On",
       }.freeze,
     }.freeze
+    TASK_TRANSITIONS = {
+      "New"       => "Starting",
+      "Starting"  => "Running",
+      "Running"   => "Completed",
+      "Completed" => "Completed",
+    }
 
     def service(request, response)
       return response.status = 401 unless authorized?(request)
@@ -48,12 +54,22 @@ module RedfishTools
 
       item = datastore.get(request.path)
       response.status = 200
+
+      if request.path.chomp("/").end_with?("monitor") && item.body["TaskState"]
+        item.body["TaskState"] = TASK_TRANSITIONS[item.body["TaskState"]]
+        response.status = 202
+        if item.body["TaskState"] == "Completed"
+          response.status = 200
+          item.body["EndTime"] = Time.now.utc.iso8601
+        end
+      end
+
       set_headers(response, item.headers)
       response.body = item.body.to_json
     end
 
     def do_POST(request, response)
-      action = system_actions[request.path]
+      action = actions[request.path]
       item = datastore.get(request.path)
       return response.status = 404 unless action || item.body
       return response.status = 405 if action.nil? && item.body["Members"].nil?
@@ -106,13 +122,22 @@ module RedfishTools
     end
 
     def execute_action(action, data)
-      # TODO(@tadeboro): This method currently only handles reset action.
-      system = datastore.get(action[:system_id]).body
-      action = system["Actions"][action[:name]]
+      resource = datastore.get(action[:id]).body
+      case action[:name]
+      when "#ComputerSystem.Reset"
+        execute_computer_system_reset(resource, data)
+      when "#UpdateService.SimpleUpdate"
+        execute_update_service_simple_update(resource, data)
+      end
+    end
+
+    def execute_computer_system_reset(system, data)
+      action = system["Actions"]["#ComputerSystem.Reset"]
       reset = data["ResetType"]
 
+      # TODO(@tadeboro): Handle ActionInfo case also.
       unless action["ResetType@Redfish.AllowableValues"].include?(reset)
-        return error_body("Invalid reset type"), nill, 400
+        return error_body("Invalid reset type"), nil, 400
       end
 
       unless TRANSITIONS[system["PowerState"]].key?(reset)
@@ -123,6 +148,37 @@ module RedfishTools
       system["PowerState"] = TRANSITIONS[system["PowerState"]][reset]
 
       [error_body("Success"), nil, 200]
+    end
+
+    def execute_update_service_simple_update(service, data)
+      action = service["Actions"]["#UpdateService.SimpleUpdate"]
+      proto = data["TransferProtocol"]
+      targets = data["Targets"] || []
+
+      # TODO(@tadeboro): Handle ActionInfo case also.
+      unless action["TransferProtocol@Redfish.AllowableValues"].include?(proto)
+        return error_body("Invalid transfer protocol value"), nil, 400
+      end
+
+      unless (targets - systems).empty?
+        return error_body("Invalid targets: #{targets - systems}"), nil, 400
+      end
+
+      task_service_id = datastore.get("/redfish/v1").body["Tasks"]["@odata.id"]
+      task_col_id = datastore.get(task_service_id).body["Tasks"]["@odata.id"]
+
+      body, _, _ = new_item(datastore.get(task_col_id), {
+        "TaskState" => "New",
+        "StartTime" => Time.new.utc.iso8601,
+      })
+
+      task_monitor_path = body["@odata.id"] + "/monitor"
+      headers = DEFAULT_HEADERS.merge("location" => task_monitor_path)
+
+      body["TaskMonitor"] = task_monitor_path
+      datastore.set(task_monitor_path, body, headers: headers)
+
+      [body, headers, 202]
     end
 
     def login_path?(path)
