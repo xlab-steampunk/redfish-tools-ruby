@@ -21,16 +21,18 @@ module RedfishTools
       "content-type" => "application/json"
     }.freeze
     TRANSITIONS = {
-      "On"  => {
-        "GracefullShutdown" => "Off",
-        "ForceOff"          => "Off",
-        "PushPowerButton"   => "Off",
-        "Nmi"               => "Off",
-        "GracefullRestart"  => "On",
-        "ForceRestart"      => "On",
-        "PowerCycle"        => "On",
+      "PoweringOn"  => {}.freeze,
+      "On"          => {
+        "GracefulShutdown" => "Off",
+        "ForceOff"         => "Off",
+        "PushPowerButton"  => "Off",
+        "Nmi"              => "Off",
+        "GracefulRestart"  => "On",
+        "ForceRestart"     => "On",
+        "PowerCycle"       => "On",
       }.freeze,
-      "Off" => {
+      "PoweringOff" => {}.freeze,
+      "Off"         => {
         "On"              => "On",
         "ForceOn"         => "On",
         "PushPowerButton" => "On",
