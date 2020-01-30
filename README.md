@@ -3,19 +3,22 @@
 [![Build Status](https://travis-ci.com/xlab-si/redfish_tools.svg?branch=master)](https://travis-ci.com/xlab-si/redfish_tools)
 
 
-This repository contains source code for redfish_tools gem that contains tools
-for testing application that know how to work with Redfish API.
+This repository contains source code for redfish_tools gem that contains
+helpers for testing application that know how to work with Redfish API.
 
-The only tool that is currently available is mock server, but in the near
-future, we will also add a mock creator tool and interactive inspector for
-Redfish services.
+The main entry point is the `redfish` command that offers a mock Redfish
+server, a mock server-side events (SSE) server, and a redfish recorder for
+taking a snapshot of an existing Redfish API among other things. Consult the
+built-in help for more information about the available commands.
 
 
 ## Installation
 
-Add this line to your application's Gemfile:
+Create a new *Gemfile* with the following content:
 
-    gem "redfish_tools"
+    source "https://rubygems.org" do
+      gem "redfish_tools"
+    end
 
 And then execute:
 
@@ -34,8 +37,11 @@ this:
 
     $ redfish
     Commands:
-      redfish help [COMMAND]        # Describe available commands
-      redfish serve [OPTIONS] PATH  # serve mock from PATH
+      redfish help [COMMAND]              # Describe available commands or one specific command
+      redfish listen_sse ADDRESS          # listen to events from ADDRESS
+      redfish record SERVICE PATH         # create recording of SERVICE in PATH
+      redfish serve [OPTIONS] PATH        # serve mock from PATH
+      redfish serve_sse [OPTIONS] SOURCE  # serve events from SOURCE
 
 To start serving existing Redfish recording, we run the `serve` command:
 
