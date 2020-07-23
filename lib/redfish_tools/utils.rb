@@ -15,7 +15,7 @@ module RedfishTools
             raise Exceptions::MergeConflict, "Conflict at '%s'" % (path + [key.to_s]).join(".")
           end
         else
-          raise Exceptions::MergeConflict, "Key '%s' does not exists in source hash" % (path + [key.to_s]).join(".")
+          a[key] = value
         end
       }
       a
